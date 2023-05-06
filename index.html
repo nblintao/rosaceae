@@ -1,0 +1,213 @@
+<html>
+
+<head>
+    <title>分辨桃花、李花、樱花、杏花、梨花、梅花、海棠</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <div id="myPlot"></div>
+    <script>
+        // create an svg element
+        var svg = d3.select("#myPlot").append("svg")
+            .attr("width", 500)
+            .attr("height", 500);
+
+        // create an array of values
+        var values = [10, 20, 30, 40, 50];
+
+        // create a scale for the y position of the circles
+        var yScale = d3.scaleLinear()
+            .domain([0, d3.max(values)])
+            .range([450, 50]);
+
+        // create a scale for the radius of the circles
+        var rScale = d3.scaleSqrt()
+            .domain([0, d3.max(values)])
+            .range([10, 40]);
+
+        // create a color scale for the fill of the circles
+        var colorScale = d3.scaleOrdinal()
+            .domain(values)
+            .range(d3.schemeCategory10);
+
+        // bind the data to the circles
+        // var circles = svg.selectAll("circle")
+        //     .data(values)
+        //     .enter()
+        //     .append("circle")
+        //     .attr("cx", function (d, i) {
+        //         return (i + 1) * 80; // set the x position based on the index
+        //     })
+        //     .attr("cy", function (d) {
+        //         return yScale(d); // set the y position based on the value
+        //     })
+        //     .attr("r", function (d) {
+        //         return rScale(d); // set the radius based on the value
+        //     })
+        //     .attr("fill", function (d) {
+        //         return colorScale(d); // set the fill based on the value
+        //     });
+
+        // create a function to update the data and redraw the circles
+        // function update() {
+        //     // generate new random values
+        //     values = values.map(function () {
+        //         return Math.floor(Math.random() * 50 + 10);
+        //     });
+
+        //     // update the y scale domain
+        //     yScale.domain([0, d3.max(values)]);
+
+        //     // update the circles with new data
+        //     circles.data(values)
+        //         .transition() // add a transition for smooth animation
+        //         .duration(1000) // set the duration of the transition
+        //         .attr("cy", function (d) {
+        //             return yScale(d); // update the y position based on the new value
+        //         })
+        //         .attr("r", function (d) {
+        //             return rScale(d); // update the radius based on the new value
+        //         })
+        //         .attr("fill", function (d) {
+        //             return colorScale(d); // update the fill based on the new value
+        //         });
+        // }
+        // call the update function every 2 seconds
+        // setInterval(update, 2000);
+        // update()
+        // flowers = [
+        //     {
+        //         "name": "桃花",
+        //     },
+        //     {
+        //         "name": "李花",
+        //     },
+        //     {
+        //         "name": "樱花",
+        //     },
+        //     {
+        //         "name": "杏花",
+        //     },
+        //     {
+        //         "name": "梨花",
+        //     },
+        //     {
+        //         "name": "梅花",
+        //     },
+        //     {
+        //         "name": "海棠",
+        //     },
+        // ]
+
+        flowers = ["桃花", "李花", "樱花", "杏花", "梨花", "梅花", "海棠"]
+
+        var flower_score = {}
+
+        function update_flower_score() {
+            for (var i = 0; i < flowers.length; i++) {
+                var flower = flowers[i];
+                // generate a random score between 10 and 59
+                var score = Math.floor(Math.random() * 50 + 10);
+                // assign the score to the flower in the object
+                flower_score[flower] = score;
+            }
+            console.log(flower_score)
+        }
+
+        function getName(d) {
+            return d[0];
+        }
+        function getScore(d) {
+            return d[1];
+        }
+
+
+        update_flower_score();
+        // update the circles with new data
+        var groups = svg.selectAll("g")
+            .data(Object.entries(flower_score))
+
+            .enter()
+            .append("g")
+
+            .attr("transform", function (d, i) {
+                return "translate(" + ((i + 1) * 80) + "," + yScale(getScore(d)) + ")"; // set the position based on the index and value
+            });
+
+        // append a circle to each group
+        // groups.append("circle")
+        //     .attr("r", function (d) {
+        //         return rScale(d); // set the radius based on the value
+        //     })
+        //     .attr("fill", function (d) {
+        //         return colorScale(d); // set the fill based on the value
+        //     });
+
+        // append an image to each group
+        images = groups.append("image")
+
+            .attr("xlink:href", function (d, i) {
+                return `assets/images/${getName(d)}.jpg`; // set the image source based on the index
+            })
+            .attr("x", function (d) {
+                return -rScale(getScore(d)); // set the x position based on the radius
+            })
+            .attr("y", function (d) {
+                return -rScale(getScore(d)); // set the y position based on the radius
+            })
+            .attr("width", function (d) {
+                return rScale(getScore(d)) * 2; // set the width based on the radius
+            })
+            .attr("height", function (d) {
+                return rScale(getScore(d)) * 2; // set the height based on the radius
+            })
+            .attr("border-radius", function (d) {
+                return "50%";
+            });
+
+        // append a text to each group
+        groups.append("text")
+            .attr("dx", -5) // set a small offset for better alignment
+            .text(function (d, i) {
+                return getName(d); // set the text content based on the index
+            })
+            .style("fill", "white") // set the text color to white
+            .style("font-size", "20px"); // set the text size to 20px
+
+        function update() {
+            update_flower_score();
+            groups.data(Object.entries(flower_score))
+                .transition()
+                .duration(1000)
+
+                .attr("transform", function (d, i) {
+                    return "translate(" + ((i + 1) * 80) + "," + yScale(getScore(d)) + ")"; // set the position based on the index and value
+                });
+            images.data(Object.entries(flower_score))
+                .transition()
+                .duration(1000)
+                .attr("xlink:href", function (d, i) {
+                    return `assets/images/${getName(d)}.jpg`; // set the image source based on the index
+                })
+                .attr("x", function (d) {
+                    return -rScale(getScore(d)); // set the x position based on the radius
+                })
+                .attr("y", function (d) {
+                    return -rScale(getScore(d)); // set the y position based on the radius
+                })
+                .attr("width", function (d) {
+                    return rScale(getScore(d)) * 2; // set the width based on the radius
+                })
+                .attr("height", function (d) {
+                    return rScale(getScore(d)) * 2; // set the height based on the radius
+                })
+                .attr("border-radius", function (d) {
+                    return "50%";
+                });
+        }
+        setInterval(update, 2000);
+    </script>
+</body>
+
+</html>
